@@ -52,7 +52,12 @@ df = pd.DataFrame(
 )
 
 # Create annotations and display matrix
-weightings, top_gene_scores = annotator.create_annotations(reference, df)
+weightings, top_gene_scores = annotator.create_annotations(
+    reference,  # reference data
+    df,         # sheet data
+    limit=5,    # number of top matching cell types to include
+    level=0.1   # minimum score to include a gene
+)
 display_matrix = annotator.create_display_matrix(weightings)
 
 # Display the results

@@ -7,7 +7,7 @@ def main(file_path):
     df = annotator.load_sheet(file_path, 'E_Xenium_0.4')
     
     # Create annotations and display matrix
-    weightings, top_gene_scores = annotator.create_annotations(reference, df)
+    weightings, top_gene_scores = annotator.create_annotations(reference, df, limit=30, level=0)
     display_matrix = annotator.create_display_matrix(weightings)
     
     # Print results

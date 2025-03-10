@@ -1,6 +1,9 @@
 import pandas as pd
 from collections import Counter
 
+SCORE_CUTOFF = 0.1
+LIMIT = 5
+
 def load_sheet(file_path, sheet_name=None):
     """
     Load the sheet from the Excel file
@@ -74,34 +77,39 @@ def _create_marker_potential_matrix(reference, counts):
                 result_matrix.loc[str(value), col] = 1 / (1 + idx) / counts[value]
     return result_matrix
 
-def _create_top_gene_scores(weightings, result_matrix, match_matrix, limit=4):
+def _create_top_gene_scores(weightings, result_matrix, match_matrix, limit, level):
     """
     Create a dictionary of dataframes with top matching cell types and their top 10 gene scores.
     """
+    limit = limit or weightings.shape[1]
     results = {}
     for col in weightings.columns:
         col_sorted = weightings[col].sort_values(ascending=False)
-        col_filtered = col_sorted[col_sorted >= 0.1].head(5)
+        col_filtered = col_sorted[col_sorted >= SCORE_CUTOFF].head(LIMIT)
         top_gene_scores_df = pd.DataFrame()
+        max_genes = 0
         for match in col_filtered.index:
             scores = match_matrix[col] * result_matrix[match] * 100
             top_genes = scores.sort_values(ascending=False)
-            top_genes = top_genes[top_genes > 0.01].head(limit)
+            top_genes = top_genes[top_genes > level].head(limit)
             formatted_genes = [f"{gene} ({score:.2f})" for gene, score in top_genes.items()]
             match_series = pd.Series(formatted_genes, name=match)
             match_series = match_series.reindex(range(limit), fill_value="")
             top_gene_scores_df = pd.concat([top_gene_scores_df, match_series], axis=1)
-        results[col] = top_gene_scores_df
+            max_genes = max(max_genes, len(formatted_genes))
+        results[col] = top_gene_scores_df.reindex(range(max_genes), fill_value="")
     return results
 
-def create_annotations(reference, df):
+def create_annotations(reference, df, limit=None, level=0):
     """
     Create an annotation weighting matrix from the reference and the dataframe
-    
+
     Parameters:
         reference (pd.DataFrame): Reference data loaded using load_reference()
         df (pd.DataFrame): Sheet data loaded using load_sheet()
-    
+        limit (int): Number of top matching cell types to include
+        level (float): Minimum score to include a gene
+        
     Returns:
         tuple: (weightings, top_gene_scores)
             - weightings: DataFrame containing cell type match percentages
@@ -113,9 +121,9 @@ def create_annotations(reference, df):
     match_matrix = _create_marker_potential_matrix(df, {gene: 1 for gene in counts})
     weightings = result_matrix.transpose() @ match_matrix
     weightings = weightings.div(weightings.sum(axis=0), axis=1).mul(100).round(2)
-    return weightings, _create_top_gene_scores(weightings, result_matrix, match_matrix)
+    return weightings, _create_top_gene_scores(weightings, result_matrix, match_matrix, limit, level)
 
-def create_display_matrix(weightings):
+def create_display_matrix(weightings, level=SCORE_CUTOFF):
     """
     Create a display matrix from the weightings
     
@@ -128,7 +136,7 @@ def create_display_matrix(weightings):
     result_df = pd.DataFrame()
     for col in weightings.columns:
         col_sorted = weightings[col].sort_values(ascending=False)
-        col_filtered = col_sorted[col_sorted >= 0.1].head(5)
+        col_filtered = col_sorted[col_sorted >= level].head(LIMIT)
         formatted_series = pd.Series(
             [f"{idx} ({val}%)" for idx, val in col_filtered.items()],
             name=col,
