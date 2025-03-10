@@ -16,7 +16,7 @@ def load_sheet(file_path, sheet_name=None):
 
     is loaded even if it is not aligned exactly to the left.
     """
-    df = pd.read_excel(file_path, sheet_name=sheet_name)
+    df = pd.read_excel(file_path, sheet_name=sheet_name or 'Integ summary')
     
     # Find first column with purely numeric data or NaN
     start_idx = None
