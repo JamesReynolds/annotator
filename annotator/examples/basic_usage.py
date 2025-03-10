@@ -3,7 +3,7 @@ import sys
 
 def main(file_path):
     # Load the reference and data sheets
-    reference = annotator.load_reference(file_path)
+    reference = annotator.load_reference(file_path, 'Integ summary')
     df = annotator.load_sheet(file_path, 'E_Xenium_0.4')
     
     # Create annotations and display matrix

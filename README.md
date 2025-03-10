@@ -25,9 +25,12 @@ Here's a quick example of how to use the library to analyze gene expression data
 
 ```python
 import pandas as pd
-from annotator import create_top_gene_scores
+import annotator
 
-reference = annotator.load_reference("DataSheet.xlsx")
+# Load reference from file
+reference = annotator.load_reference("DataSheet.xlsx", "Integ Summary")
+
+# ...results in a dataframe like this:
 reference = pd.DataFrame(
     {
         "CellType1": ["GeneA", "GeneB", "GeneC"],
@@ -35,7 +38,11 @@ reference = pd.DataFrame(
         "CellType3": ["GeneG", "GeneH", "GeneI"]
     }
 )
+
+# Load file for annotation
 df = annotator.load_sheet("DataSheet.xlsx", 'E_Xenium_0.4')
+
+# ...results in a dataframe of the same form as the annotator
 df = pd.DataFrame(
     {
         "CellType1": ["GeneA", "GeneB", "GeneC"],
@@ -48,11 +55,9 @@ df = pd.DataFrame(
 weightings, top_gene_scores = annotator.create_annotations(reference, df)
 display_matrix = annotator.create_display_matrix(weightings)
 
-# Create the top gene scores DataFrame
-top_gene_scores_df = create_top_gene_scores(weightings, result_matrix)
-
 # Display the results
-print(top_gene_scores_df)
+print(display_matrix)
+print(top_gene_scores)
 ```
 
 ## Contributing

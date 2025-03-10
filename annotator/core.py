@@ -1,7 +1,7 @@
 import pandas as pd
 from collections import Counter
 
-def load_sheet(file_path, sheet_name):
+def load_sheet(file_path, sheet_name=None):
     """
     Load the sheet from the Excel file
     
@@ -35,12 +35,11 @@ def load_sheet(file_path, sheet_name):
 
     return df
 
-def load_reference(file_path):
+def load_reference(file_path, sheet_name=None):
     """
     Load the reference sheet from the Excel file
 
-    The reference sheet must be named 'Integ summary' and is
-    of the form:
+    The reference sheet must be of the form:
 
     | Cell type 1       | Cell type 1    | Cell type 2       | Cell type 2    | ...
     | Wilcoxon Ordering | Other ordering | Wilcoxon Ordering | Other ordering | ...
@@ -49,7 +48,7 @@ def load_reference(file_path):
     The first column contains the cell type labels, and the remaining
     columns contain the number of integrations for each cell type.
     """
-    reference = pd.read_excel(file_path, sheet_name='Integ summary')
+    reference = pd.read_excel(file_path, sheet_name=sheet_name)
     reference = reference.iloc[:, ::2]
     return reference
 
